@@ -9,7 +9,7 @@
 import Foundation
 
 class SearchResultController {
-    let baseURL = URL(string: "https://itunes.apple.com")!
+    let baseURL = URL(string: "https://itunes.apple.com/search")!
     
     var searchResults: [SearchResult] = []
     
@@ -23,14 +23,15 @@ class SearchResultController {
     func searchResultsWith(searchTerm: String, resultType: ResultType, completion: @escaping (Error?) -> Void) {
         var urlComponents = URLComponents(url: baseURL, resolvingAgainstBaseURL: true)
         let searchTermQueryItem = URLQueryItem(name: "search", value: searchTerm)
-        let resultTypeQuertItem = URLQueryItem(name: "resultType", value: resultType.rawValue)
-        urlComponents?.queryItems = [searchTermQueryItem]
-        urlComponents?.queryItems = [resultTypeQuertItem]
+        let resultTypeQueryItem = URLQueryItem(name: "type", value: resultType.rawValue)
+        urlComponents?.queryItems = [resultTypeQueryItem, searchTermQueryItem]
+        
         guard let requestURL = urlComponents?.url else {
             print("Request URL is nil")
             completion(NSError())
             return
         }
+        
         var request = URLRequest(url: requestURL)
         request.httpMethod = HTTPMethod.get.rawValue
         
@@ -41,20 +42,19 @@ class SearchResultController {
             }
             
             guard let data = data else {
-                print("No data returned from data task.")
+                completion(NSError())
                 return
             }
             
             let jsonDecoder = JSONDecoder()
+            
             do{
                 let resultsSearch = try jsonDecoder.decode(SearchResults.self, from: data)
-                self.searchResults.append(contentsOf: resultsSearch.results)
+                self.searchResults = resultsSearch.results
+                completion(nil)
             } catch{
                 print("Unable to decode data into object of type [SearchResult] \(error)")
                 completion(error)
-            }
-            DispatchQueue.main.async {
-                completion(nil)
             }
         }.resume()
         

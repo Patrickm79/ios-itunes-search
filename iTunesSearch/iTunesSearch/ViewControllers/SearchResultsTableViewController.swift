@@ -23,11 +23,14 @@ class SearchResultsTableViewController: UITableViewController {
     //MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-
         searchBar.delegate = self
     }
 
     // MARK: - Table view data source
+    
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        return 1
+    }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return searchResultsController.searchResults.count
@@ -37,8 +40,9 @@ class SearchResultsTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ResultCell", for: indexPath)
         let result = searchResultsController.searchResults[indexPath.row]
-        cell.textLabel?.text = result.creator
-        cell.detailTextLabel?.text = result.title
+        
+        cell.textLabel?.text = result.title
+        cell.detailTextLabel?.text = result.creator
         
         return cell
     }
@@ -49,8 +53,8 @@ class SearchResultsTableViewController: UITableViewController {
 extension SearchResultsTableViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         var resultType: ResultType!
-        guard let searchTerm = searchBar.text else { return }
-        switch self.segmentedControl.selectedSegmentIndex {
+        guard let searchTerm = searchBar.text, !searchTerm.isEmpty else { return }
+        switch segmentedControl.selectedSegmentIndex {
         case 0:
             resultType = .software
         case 1:
@@ -58,10 +62,13 @@ extension SearchResultsTableViewController: UISearchBarDelegate {
         case 2:
             resultType = .musicTrack
         default:
-            resultType = .software
+            break
         }
         
-        searchResultsController.searchResultsWith(searchTerm: searchTerm, resultType: resultType) {_ in
+        searchResultsController.searchResultsWith(searchTerm: searchTerm, resultType: resultType) { (error) in
+            if let error = error {
+                NSLog("\(error)")
+        }
             DispatchQueue.main.async {
                 self.tableView.reloadData()
             }

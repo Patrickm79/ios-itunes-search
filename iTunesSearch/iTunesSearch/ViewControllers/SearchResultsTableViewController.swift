@@ -54,6 +54,7 @@ extension SearchResultsTableViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         var resultType: ResultType!
         guard let searchTerm = searchBar.text, !searchTerm.isEmpty else { return }
+        
         switch segmentedControl.selectedSegmentIndex {
         case 0:
             resultType = .software
@@ -65,7 +66,7 @@ extension SearchResultsTableViewController: UISearchBarDelegate {
             break
         }
         
-        searchResultsController.searchResultsWith(searchTerm: searchTerm, resultType: resultType) { (error) in
+        searchResultsController.searchResultsWith(searchTerm: searchTerm, resultType: resultType) { error in
             if let error = error {
                 NSLog("\(error)")
         }

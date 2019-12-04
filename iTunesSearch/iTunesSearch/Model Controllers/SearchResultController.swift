@@ -9,7 +9,7 @@
 import Foundation
 
 class SearchResultController {
-    let baseURL = URL(string: "https://itunes.apple.com/search")!
+    let baseURL = URL(string: "https://itunes.apple.com/search")
     
     var searchResults: [SearchResult] = []
     
@@ -21,9 +21,10 @@ class SearchResultController {
     }
     
     func searchResultsWith(searchTerm: String, resultType: ResultType, completion: @escaping (Error?) -> Void) {
-        var urlComponents = URLComponents(url: baseURL, resolvingAgainstBaseURL: true)
-        let searchTermQueryItem = URLQueryItem(name: "search", value: searchTerm)
-        let resultTypeQueryItem = URLQueryItem(name: "type", value: resultType.rawValue)
+        guard let url = baseURL else { return }
+        var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: true)
+        let searchTermQueryItem = URLQueryItem(name: "term", value: searchTerm)
+        let resultTypeQueryItem = URLQueryItem(name: "entity", value: resultType.rawValue)
         urlComponents?.queryItems = [resultTypeQueryItem, searchTermQueryItem]
         
         guard let requestURL = urlComponents?.url else {
@@ -38,6 +39,7 @@ class SearchResultController {
         URLSession.shared.dataTask(with: request) { (data, _, error) in
             if let error = error {
                 print("Error fetching data: \(error)")
+                completion(error)
                 return
             }
             
